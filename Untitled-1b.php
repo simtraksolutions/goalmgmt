@@ -136,7 +136,6 @@ function submitdata(){
                         } else {
                             $message .= "$goalp[$z]: 0\n";
                         }
-                        //dfds
                         $z++;
                     }
                     $to = "shadowchor883@gmail.com";
