@@ -1,17 +1,13 @@
 <?php
-include("DB/dbconn.php");
-$teamID = $_SESSION["team_id"];
-$sql1 = "SELECT * FROM `teams` WHERE `id` = '$teamID'";
-$teamname_result = mysqli_query($conn, $sql1);
-$teamname = mysqli_fetch_object($teamname_result);
-$delete_goal = "SELECT * FROM `$teamname->team_name` WHERE `ID` = '" . $_GET["delete_goal"] . "'";
-$delete_goal = mysqli_query($conn, $delete_goal);
-$delete_goal = mysqli_fetch_object($delete_goal);
-
+include("DB/team.php");
+if (isset($_SESSION['user_id'])) {
+} else {
+  header("location:login.php");
+}
 ?>
 
 <!doctype html>
-<title>Goal Delete | GOAL MANAGEMENT </title>
+<title>Create Team/Add Parameter | GOAL MANAGEMENT </title>
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,7 +20,7 @@ $delete_goal = mysqli_fetch_object($delete_goal);
 
   <!-- favicon
     ============================================ -->
-  <link rel="shortcut icon" type="image/x-icon" href="https://adore.simtrak.in/assets/img/favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="image/icon.png">
   <!-- Google Fonts
     ============================================ -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i,800" rel="stylesheet">
@@ -326,16 +322,21 @@ $delete_goal = mysqli_fetch_object($delete_goal);
         console.log("Form submitted"); // Log message to ensure the form submission event is triggered
         $.ajax({
           type: 'POST',
-          url: 'deletegoalb.php',
+          url: 'addteamb.php',
           data: new FormData(this),
           contentType: false,
           cache: false,
           processData: false,
           success: function (response) {
             console.log("Response received:", response); // Log the response received from the server
-            if (response.trim() === 'ok') { // Trim the response to remove any whitespace
+            if (response.trim() === 'not ok') { // Trim the response to remove any whitespace
               console.log("Window closing..."); // Log message to ensure the window closing logic is reached
               window.close(); // Close the window upon successful form submission
+            } else {
+              console.log("Window closing..."); // Log message to ensure the window closing logic is reached
+              window.close(); // Close the window upon successful form submission
+              // Redirect the current tab to access.php with the result parameter set to the response variable
+              window.location.href = 'DB/access.php?team_id=' + encodeURIComponent(response);
             }
           }
         });
@@ -408,7 +409,7 @@ $delete_goal = mysqli_fetch_object($delete_goal);
           <div style="margin-top:0px;margin-bottom:20px;" class="income-dashone-total shadow-reset nt-mg-b-30">
             <div class="income-title">
               <div class="main-income-head">
-                <h2>Goal Delete Reason</h2>
+                <h2>Create Team/Add Parameter</h2>
               </div>
             </div>
             <div class="sparkline10-graph">
@@ -416,19 +417,65 @@ $delete_goal = mysqli_fetch_object($delete_goal);
               <div class="all-form-element-inner">
                 <div id="formbox">
                   <form id="uploadForm" enctype="multipart/form-data">
-                    <input type="text" name="delete_id" value="<?= $delete_goal->ID ?>" required hidden>
-                    <div class="form-group-inner">
-                      <div class="form-group">
-                        <input type="text" id="old_value" name="remark" class="form-control" placeholder="Reason"
-                          required>
+                    <div>
+                      <div id="inputContainer">
+                        <input type="text" value="<?php echo $_SESSION["team_id"] ?>" name="team_name" require hidden>
+                        <div id="dynamicInput"></div>
+                        <div>
+                          <div id="inputField1">
+                            <div class="form-group-inner">
+                              <div class="row">
+                                <div class="col-lg-3">
+                                  <label for="inputField1" class="login2 pull-right pull-right-pro">Add
+                                    Parameter:</label>
+                                </div>
+                                <div class="col-lg-9">
+                                  <input type="text" name="100" class="form-control" placeholder="Parameter Name"
+                                    required>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="form-group-inner">
+                              <div class="row">
+                                <div class="col-lg-3">
+                                  <label for="inputField1" class="login2 pull-right pull-right-pro">Parameter Data
+                                    Type:</label>
+                                </div>
+                                <div class="col-lg-9">
+                                  <div class="chosen-select-single">
+                                    <select style="width:100%" class="select2_demo_3 form-control"
+                                      data-placeholder="Select type" name="500" aria-label="Default select example"
+                                      required>
+                                      <option value="VARCHAR">Text</option>
+                                      <option value="INT" selected>Number</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-group-inner">
+                            <div class="row">
+                              <div class="col-lg-3">
+                              </div>
+                              <div class="col-lg-9">
+                                <a class="btn btn-primary addbutton2" style="float:right;margin-right:10px;"
+                                  onclick="addInputField()">+New Parameter</a>
+                                <a class="btn btn-danger" onclick="removeInputField(1)" style="float:right;">x</a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <center>
-                      <button type="submit" class="btn btn-primary"><span class="fa fa-check"></span>&nbsp
-                        Submit</button>
-                      <script>'.$window_close.'</script>
-                      <a href="#" class="btn btn-danger" onclick="javascript:window.close('','_parent','');">Close</a>
-                    </center>
+                      <div>
+                        <center>
+                          <button type="submit" class="btn btn-primary"><span class="fa fa-check"></span>&nbsp
+                            Submit</button>
+                          <script>'.$window_close.'</script>
+                          <a href="#" class="btn btn-danger"
+                            onclick="javascript:window.close('','_parent','');">Close</a>
+                        </center>
+                      </div>
                   </form>
                 </div>
                 <style>
@@ -544,6 +591,146 @@ $delete_goal = mysqli_fetch_object($delete_goal);
               <!-- main JS
     ============================================ -->
               <script src="https://adore.simtrak.in/assets/js/main.js"></script>
+              <script>
+                var inputCount = 1; // Initialize input count
+                var parameter = 100;
+                var data_type = 500;
+                document.cookie = "inputCount=" + inputCount;
+
+                function addInputField() {
+                  inputCount++; // Increment input count
+                  parameter++;
+                  data_type++;
+                  document.cookie = "inputCount=" + inputCount;
+
+                  // Create a new div to hold input fields, label, select, and remove button
+                  var newDiv = document.createElement("div");
+
+                  newDiv.innerHTML = `
+      <div id="inputField${inputCount}">
+        <div class="form-group-inner">
+          <div class="row">  
+            <div class="col-lg-3">
+                <label for="inputField1" class="login2 pull-right pull-right-pro">Add Parameter:</label>
+            </div>
+            <div class="col-lg-9">
+              <input type="text"  name="${parameter}" class="form-control" placeholder="Parameter Name" required>
+            </div>
+          </div>
+        </div>
+        <div class="form-group-inner">
+          <div id="inputField1" class="row">  
+            <div class="col-lg-3">
+                <label for="inputField1" class="login2 pull-right pull-right-pro">Parameter Data Type:</label>
+            </div>
+            <div class="col-lg-9">
+              <div class="chosen-select-single">
+                <select style="width:100%" class="select2_demo_3 form-control" data-placeholder="Select type" name="${data_type}" aria-label="Default select example" required>
+                  <option value="VARCHAR">Text</option>
+                  <option value="INT" selected>Number</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="form-group-inner">
+          <div class="row">
+            <div class="col-lg-3">
+            </div>
+            <div class="col-lg-9">
+              <a class="btn btn-primary addbutton2" style="float:right;margin-right:10px;" onclick="addInputField()">+New Parameter</a>
+              <a class="btn btn-danger remove-lnk" onclick="removeInputField(${inputCount})" style="float:right;">x</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+                  // Append the new input field to the container
+                  document.getElementById("inputContainer").appendChild(newDiv);
+                }
+
+                function removeInputField(inputNumber) {
+                  // Remove the div containing the input field, select, and remove button
+                  var divToRemove = document.getElementById(`inputField${inputNumber}`).parentNode;
+                  divToRemove.parentNode.removeChild(divToRemove);
+                }
+
+
+                function createNewInput() {
+                  var selectedValue = document.getElementById("category").value;
+                  var dynamicInputContainer = document.getElementById("dynamicInput");
+
+                  // Clear previous dynamic input
+                  dynamicInputContainer.innerHTML = "";
+
+                  if (selectedValue === "other") {
+                    var newInputDiv = document.createElement("div");
+                    newInputDiv.classList.add("form-group-inner");
+
+                    var rowDiv = document.createElement("div");
+                    rowDiv.classList.add("row");
+
+                    var colLG3Div = document.createElement("div");
+                    colLG3Div.classList.add("col-lg-3");
+
+                    var labelElement = document.createElement("label");
+                    labelElement.classList.add("login2", "pull-right", "pull-right-pro");
+                    labelElement.textContent = "New Team Name:";
+
+                    colLG3Div.appendChild(labelElement);
+                    rowDiv.appendChild(colLG3Div);
+
+                    var colLG9Div = document.createElement("div");
+                    colLG9Div.classList.add("col-lg-9");
+
+                    var newInput = document.createElement("input");
+                    newInput.type = "text";
+                    newInput.placeholder = "Enter new team name";
+                    newInput.name = "newteam";
+                    newInput.classList.add("form-control");
+
+                    colLG9Div.appendChild(newInput);
+                    rowDiv.appendChild(colLG9Div);
+
+                    newInputDiv.appendChild(rowDiv);
+                    dynamicInputContainer.appendChild(newInputDiv);
+
+                    var newInputDiv = document.createElement("div");
+                    newInputDiv.classList.add("form-group-inner");
+
+                    var rowDiv = document.createElement("div");
+                    rowDiv.classList.add("row");
+
+                    var colLG3Div = document.createElement("div");
+                    colLG3Div.classList.add("col-lg-3");
+
+                    var labelElement = document.createElement("label");
+                    labelElement.classList.add("login2", "pull-right", "pull-right-pro");
+                    labelElement.textContent = "New Team domain:";
+
+                    colLG3Div.appendChild(labelElement);
+                    rowDiv.appendChild(colLG3Div);
+
+                    var colLG9Div = document.createElement("div");
+                    colLG9Div.classList.add("col-lg-9");
+
+                    var newInput = document.createElement("input");
+                    newInput.type = "text";
+                    newInput.placeholder = "Enter new team domain";
+                    newInput.name = "teamdomain";
+                    newInput.classList.add("form-control");
+
+                    colLG9Div.appendChild(newInput);
+                    rowDiv.appendChild(colLG9Div);
+
+                    newInputDiv.appendChild(rowDiv);
+                    dynamicInputContainer.appendChild(newInputDiv);
+                  }
+                }
+
+              </script>
 
               <script>
                 var myVar;
@@ -594,6 +781,7 @@ $delete_goal = mysqli_fetch_object($delete_goal);
 
 
               </script>
+
 
 </body>
 

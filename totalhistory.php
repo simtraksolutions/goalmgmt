@@ -1,17 +1,30 @@
 <?php
-include("DB/dbconn.php");
-$teamID = $_SESSION["team_id"];
-$sql1 = "SELECT * FROM `teams` WHERE `id` = '$teamID'";
-$teamname_result = mysqli_query($conn, $sql1);
-$teamname = mysqli_fetch_object($teamname_result);
-$delete_goal = "SELECT * FROM `$teamname->team_name` WHERE `ID` = '" . $_GET["delete_goal"] . "'";
-$delete_goal = mysqli_query($conn, $delete_goal);
-$delete_goal = mysqli_fetch_object($delete_goal);
+include ("periousmonthb.php");
+
+if (isset ($_SESSION['user_id'])) {
+} else {
+  header("location:login.php");
+}
+if (isset ($_GET["select_month"])) {
+  $month = $_GET["select_month"];
+  $year = $_GET["select_year"];
+  $start_date = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '-01';
+  $end_date = date('Y-m-t', strtotime($start_date));
+  $sql2 = "SELECT * FROM `$teamname->team_name` WHERE `goalset` <> '1' AND `Date` BETWEEN '$start_date' AND '$end_date' ORDER BY `Date` DESC";
+  $results = mysqli_query($conn, $sql2);
+} else {
+  $year = date('Y');
+  $month = date('n');
+  $start_date = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '-01';
+  $end_date = date('Y-m-t', strtotime($start_date));
+  $sql2 = "SELECT * FROM `$teamname->team_name` WHERE `goalset` <> '1' AND `Date` BETWEEN '$start_date' AND '$end_date' ORDER BY `Date` DESC";
+  $results = mysqli_query($conn, $sql2);
+}
 
 ?>
 
 <!doctype html>
-<title>Goal Delete | GOAL MANAGEMENT </title>
+<title>Add Goal | GOAL MANAGEMENT </title>
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,7 +37,7 @@ $delete_goal = mysqli_fetch_object($delete_goal);
 
   <!-- favicon
     ============================================ -->
-  <link rel="shortcut icon" type="image/x-icon" href="https://adore.simtrak.in/assets/img/favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="image/icon.png">
   <!-- Google Fonts
     ============================================ -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i,800" rel="stylesheet">
@@ -321,28 +334,41 @@ $delete_goal = mysqli_fetch_object($delete_goal);
     //]]></script>
   <script>
     $(document).ready(function () {
-      $("#uploadForm").on('submit', function (e) {
+    $("#uploadForm").on('submit', function (e) {
         e.preventDefault();
-        console.log("Form submitted"); // Log message to ensure the form submission event is triggered
-        $.ajax({
-          type: 'POST',
-          url: 'deletegoalb.php',
-          data: new FormData(this),
-          contentType: false,
-          cache: false,
-          processData: false,
-          success: function (response) {
-            console.log("Response received:", response); // Log the response received from the server
-            if (response.trim() === 'ok') { // Trim the response to remove any whitespace
-              console.log("Window closing..."); // Log message to ensure the window closing logic is reached
-              window.close(); // Close the window upon successful form submission
-            }
-          }
-        });
-      });
-    });
+        console.log("Form submitted");
 
-  </script>
+        submitFormData();
+    });
+});
+
+function submitFormData() {
+    $.ajax({
+        type: 'POST',
+        url: 'Untitled-1b.php',
+        data: new FormData($("#uploadForm")[0]), // Serialize the form data
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function (response) {
+            console.log("Response received:", response);
+            if (response.trim() === 'ok') {
+                console.log("Window closing...");
+                window.close();
+            } else if (response.trim() === 'notok') {
+                console.log("Data is missing.");
+                var confirmation = confirm("Data from one day before is missing. Do you want to submit again?");
+                if (confirmation) {
+                    submitFormData(); // Resubmit the form
+                } else {
+                    console.log("Window closing...");
+                    window.close(); // Close the window if user chooses not to submit again
+                }
+            }
+        }
+    });
+}
+</script>
 
   <script>
     window.onunload = refreshParent;
@@ -408,7 +434,7 @@ $delete_goal = mysqli_fetch_object($delete_goal);
           <div style="margin-top:0px;margin-bottom:20px;" class="income-dashone-total shadow-reset nt-mg-b-30">
             <div class="income-title">
               <div class="main-income-head">
-                <h2>Goal Delete Reason</h2>
+                <h2>Total Goal(<?php echo date('d-m-y', strtotime($totalhistorystratingdate->Date)) . " to " . date('d-m-y'); ?>) </h2>
               </div>
             </div>
             <div class="sparkline10-graph">
@@ -416,16 +442,26 @@ $delete_goal = mysqli_fetch_object($delete_goal);
               <div class="all-form-element-inner">
                 <div id="formbox">
                   <form id="uploadForm" enctype="multipart/form-data">
-                    <input type="text" name="delete_id" value="<?= $delete_goal->ID ?>" required hidden>
-                    <div class="form-group-inner">
-                      <div class="form-group">
-                        <input type="text" id="old_value" name="remark" class="form-control" placeholder="Reason"
-                          required>
+                    <?php foreach ($array as $value) { ?>
+                      <?php if ($value == 'Date' || $value == 'Member Name') {
+                        $i++;
+                        continue;
+                      } ?>
+                      <div class="form-group-inner">
+                        <div class="row">
+                          <div class="col-lg-3">
+                            <label class="login2 pull-right pull-right-pro">
+                              <?= $value ?>:
+                            </label>
+                          </div>
+                          <div class="col-lg-9">
+                            <input value="<?=$totalhistory->$value?>"
+                              class="form-control" id="task_name" readonly>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    <?php } ?>
                     <center>
-                      <button type="submit" class="btn btn-primary"><span class="fa fa-check"></span>&nbsp
-                        Submit</button>
                       <script>'.$window_close.'</script>
                       <a href="#" class="btn btn-danger" onclick="javascript:window.close('','_parent','');">Close</a>
                     </center>
@@ -466,7 +502,31 @@ $delete_goal = mysqli_fetch_object($delete_goal);
                   }
                 </style>
               </div>
-
+              <!-- Modal -->
+              <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" id="bla">
+                  <div class="modal-content">
+                    <div class="modal-body">
+                      <center>
+                        <div class="lds-roller">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                      </center>
+                    </div>
+                  </div>
+                  <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+              </div>
+              <!-- /.modal -->
               <!-- chosen JS
     ============================================ -->
               <script src="https://adore.simtrak.in/assets/js/chosen/chosen.jquery.js"></script>

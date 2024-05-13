@@ -1,9 +1,9 @@
 
 <?php
 
-    include("dbconna.php");
+    include("dbconn.php");
 
-    $sql = "DELETE FROM `LSET`";
+    $sql = "UPDATE `Vision` SET `goalset` = '0' WHERE `Member ID` = '69';";
 
     if($conn->query($sql)){
         echo "done ok";
